@@ -22,6 +22,29 @@ product-service :8001          RabbitMQ              order-service :8002
 
 - Docker and Docker Compose
 
+## Environment setup
+
+Each service has a `.env` file committed to the repo with Docker-ready defaults. You do **not** need to create anything to run via Docker Compose — the defaults work out of the box.
+
+If you want to override values (e.g. to run a service locally outside Docker), create a `.env.local` file inside the relevant service directory. It is gitignored and takes precedence over `.env`:
+
+```bash
+# order-service/.env.local  or  product-service/.env.local
+APP_SECRET=your_secret_here
+DATABASE_URL="mysql://user:pass@127.0.0.1:3306/order_db?serverVersion=8.0&charset=utf8mb4"
+MESSENGER_TRANSPORT_DSN=amqp://guest:guest@127.0.0.1:5672/%2f/messages
+```
+
+For dev-specific overrides that you want committed (shared across the team), use `.env.dev`. For test overrides use `.env.test`. See commented examples in each service's `.env.dev`.
+
+| File | Committed | Purpose |
+|------|-----------|---------|
+| `.env` | yes | Defaults for all environments (Docker values) |
+| `.env.dev` | yes | Dev overrides — shared, non-secret |
+| `.env.test` | yes | Test overrides |
+| `.env.local` | no | Your personal local overrides, never committed |
+| `.env.dev.local` | no | Local dev overrides, never committed |
+
 ## Getting started
 
 ```bash
