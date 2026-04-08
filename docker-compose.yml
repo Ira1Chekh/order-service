@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   product-app:
     build:
@@ -9,9 +7,9 @@ services:
       - "8001:80"
     environment:
       APP_ENV: dev
-      APP_SECRET: product_secret_change_me
-      DATABASE_URL: "mysql://app:app@product-db:3306/product_db?serverVersion=8.0&charset=utf8mb4"
-      MESSENGER_TRANSPORT_DSN: "amqp://guest:guest@rabbitmq:5672/%2f/messages"
+      APP_SECRET: ${PRODUCT_APP_SECRET}
+      DATABASE_URL: "mysql://${PRODUCT_DB_USER}:${PRODUCT_DB_PASSWORD}@product-db:3306/${PRODUCT_DB_NAME}?serverVersion=8.0&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/%2f/messages"
       DB_HOST: product-db
       ENABLE_CONSUMER: "true"
     volumes:
@@ -33,9 +31,9 @@ services:
       - "8002:80"
     environment:
       APP_ENV: dev
-      APP_SECRET: order_secret_change_me
-      DATABASE_URL: "mysql://app:app@order-db:3306/order_db?serverVersion=8.0&charset=utf8mb4"
-      MESSENGER_TRANSPORT_DSN: "amqp://guest:guest@rabbitmq:5672/%2f/messages"
+      APP_SECRET: ${ORDER_APP_SECRET}
+      DATABASE_URL: "mysql://${ORDER_DB_USER}:${ORDER_DB_PASSWORD}@order-db:3306/${ORDER_DB_NAME}?serverVersion=8.0&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/%2f/messages"
       DB_HOST: order-db
       ENABLE_CONSUMER: "true"
     volumes:
@@ -52,14 +50,14 @@ services:
   product-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: product_db
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: ${PRODUCT_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PRODUCT_DB_NAME}
+      MYSQL_USER: ${PRODUCT_DB_USER}
+      MYSQL_PASSWORD: ${PRODUCT_DB_PASSWORD}
     volumes:
       - product-db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${PRODUCT_DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -69,14 +67,14 @@ services:
   order-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: order_db
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: ${ORDER_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${ORDER_DB_NAME}
+      MYSQL_USER: ${ORDER_DB_USER}
+      MYSQL_PASSWORD: ${ORDER_DB_PASSWORD}
     volumes:
       - order-db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${ORDER_DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -89,8 +87,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s

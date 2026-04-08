@@ -24,26 +24,18 @@ product-service :8001          RabbitMQ              order-service :8002
 
 ## Environment setup
 
-Each service has a `.env` file committed to the repo with Docker-ready defaults. You do **not** need to create anything to run via Docker Compose — the defaults work out of the box.
-
-If you want to override values (e.g. to run a service locally outside Docker), create a `.env.local` file inside the relevant service directory. It is gitignored and takes precedence over `.env`:
+Copy the example files and fill in your values:
 
 ```bash
-# order-service/.env.local  or  product-service/.env.local
-APP_SECRET=your_secret_here
-DATABASE_URL="mysql://user:pass@127.0.0.1:3306/order_db?serverVersion=8.0&charset=utf8mb4"
-MESSENGER_TRANSPORT_DSN=amqp://guest:guest@127.0.0.1:5672/%2f/messages
+# Docker Compose (required to run the stack)
+cp .env.example .env
+
+# Each service (only needed when running PHP outside Docker)
+cp order-service/.env.example order-service/.env
+cp product-service/.env.example product-service/.env
 ```
 
-For dev-specific overrides that you want committed (shared across the team), use `.env.dev`. For test overrides use `.env.test`. See commented examples in each service's `.env.dev`.
-
-| File | Committed | Purpose |
-|------|-----------|---------|
-| `.env` | yes | Defaults for all environments (Docker values) |
-| `.env.dev` | yes | Dev overrides — shared, non-secret |
-| `.env.test` | yes | Test overrides |
-| `.env.local` | no | Your personal local overrides, never committed |
-| `.env.dev.local` | no | Local dev overrides, never committed |
+When running via Docker Compose, the root `.env` is the only file you need — it injects all variables into the containers. The service-level `.env` files are only used if you run Symfony directly on your machine without Docker.
 
 ## Getting started
 
