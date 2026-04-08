@@ -1,0 +1,27 @@
+framework:
+    messenger:
+        transports:
+            product_updates:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: product.updates
+                        type: direct
+                        default_publish_routing_key: product.updates
+                    queues:
+                        product.updates:
+                            binding_keys: [product.updates]
+            order_events:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: order.events
+                        type: direct
+                        default_publish_routing_key: order.events
+                    queues:
+                        order.events:
+                            binding_keys: [order.events]
+
+        routing:
+            'Acme\SharedBundle\DTO\ProductDTO': product_updates
+            'Acme\SharedBundle\DTO\OrderDTO': order_events

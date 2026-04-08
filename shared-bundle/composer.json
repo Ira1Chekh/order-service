@@ -1,0 +1,16 @@
+{
+    "name": "acme/shared-bundle",
+    "description": "Shared bundle for Product and Order microservices",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Acme\\SharedBundle\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.2",
+        "doctrine/orm": "^2.15",
+        "symfony/framework-bundle": "^6.4"
+    }
+}

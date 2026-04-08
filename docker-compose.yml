@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  product-app:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:80"
+    environment:
+      APP_ENV: dev
+      APP_SECRET: product_secret_change_me
+      DATABASE_URL: "mysql://app:app@product-db:3306/product_db?serverVersion=8.0&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "amqp://guest:guest@rabbitmq:5672/%2f/messages"
+      DB_HOST: product-db
+      ENABLE_CONSUMER: "true"
+    volumes:
+      - ./product-service:/var/www/html
+      - ./shared-bundle:/var/www/shared-bundle
+    depends_on:
+      product-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  order-app:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:80"
+    environment:
+      APP_ENV: dev
+      APP_SECRET: order_secret_change_me
+      DATABASE_URL: "mysql://app:app@order-db:3306/order_db?serverVersion=8.0&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "amqp://guest:guest@rabbitmq:5672/%2f/messages"
+      DB_HOST: order-db
+      ENABLE_CONSUMER: "true"
+    volumes:
+      - ./order-service:/var/www/html
+      - ./shared-bundle:/var/www/shared-bundle
+    depends_on:
+      order-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  product-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: product_db
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    volumes:
+      - product-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  order-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: order_db
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    volumes:
+      - order-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  product-db-data:
+  order-db-data:
