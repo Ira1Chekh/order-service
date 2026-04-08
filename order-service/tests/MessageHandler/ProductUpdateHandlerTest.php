@@ -44,14 +44,14 @@ class ProductUpdateHandlerTest extends TestCase
         ($this->handler)($dto);
     }
 
-    public function testUpdatesExistingLocalProductWhenFound(): void
+    public function testHandlesDuplicateMessageIdempotently(): void
     {
         $existing = new LocalProduct();
-        $existing->setName('Old Name');
-        $existing->setPrice(5.00);
+        $existing->setName('Coffee Mug');
+        $existing->setPrice(12.99);
         $existing->setQuantity(10);
 
-        $dto = new ProductDTO('existing-uuid', 'New Name', 15.00, 25);
+        $dto = new ProductDTO('existing-uuid', 'Coffee Mug', 12.99, 100);
 
         $this->repository->method('find')->with('existing-uuid')->willReturn($existing);
 
@@ -60,11 +60,10 @@ class ProductUpdateHandlerTest extends TestCase
 
         ($this->handler)($dto);
 
-        $this->assertSame('New Name', $existing->getName());
-        $this->assertSame(15.00, $existing->getPrice());
-        // Quantity is intentionally NOT overwritten for existing products —
-        // the order-service manages its local quantity independently to prevent
-        // stale ProductDTO messages from undoing order decrements.
+        // Existing products are not modified — no name, price, or quantity updates.
+        // Product-service has no update endpoint so redelivered messages carry identical data.
+        $this->assertSame('Coffee Mug', $existing->getName());
+        $this->assertSame(12.99, $existing->getPrice());
         $this->assertSame(10, $existing->getQuantity());
     }
 

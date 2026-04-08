@@ -23,14 +23,13 @@ class ProductUpdateHandler
 
         if (!$product) {
             $product = new LocalProduct($dto->id);
+            $product->setName($dto->name);
+            $product->setPrice($dto->price);
             // Quantity is only trusted from the product-service on initial sync.
             // After that, the order-service manages it locally to prevent stale
             // ProductDTO messages from overwriting quantity decrements made by orders.
             $product->setQuantity($dto->quantity);
         }
-
-        $product->setName($dto->name);
-        $product->setPrice($dto->price);
 
         $this->em->persist($product);
         $this->em->flush();

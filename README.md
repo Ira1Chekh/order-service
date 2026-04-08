@@ -81,7 +81,7 @@ curl -X POST http://localhost:8002/orders \
   -d '{"productId": "{id}", "customerName": "John Doe", "quantityOrdered": 2}'
 ```
 
-The `quantity` in the response is the remaining stock after the order, not the original value.
+The `quantity` in the product object is the remaining stock after the order. `orderStatus` will be `Processing` in the immediate response and flips to `Success` asynchronously once the `OrderCompletionHandler` processes the RabbitMQ message.
 
 **List all orders**
 ```bash
@@ -105,7 +105,7 @@ curl http://localhost:8002/orders/{id}
 
 1. `POST http://localhost:8001/products` with `{"name": "Coffee Mug", "price": 12.99, "quantity": 10}` — copy the `id` from the response
 2. Wait 1–2 seconds for the order service to sync the product
-3. `POST http://localhost:8002/orders` with `{"productId": "<id>", "customerName": "John Doe", "quantityOrdered": 3}` — quantity in response should be `7`
+3. `POST http://localhost:8002/orders` with `{"productId": "<id>", "customerName": "John Doe", "quantityOrdered": 3}` — `orderStatus` will be `Processing`; `GET` the order a moment later and it should be `Success`
 4. Try ordering 20 — you should get a `422` with an insufficient stock message
 5. `GET http://localhost:8002/orders` to see all orders
 

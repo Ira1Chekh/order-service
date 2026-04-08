@@ -44,7 +44,7 @@ class OrderService implements OrderServiceInterface
             $order->setProduct($product);
             $order->setCustomerName($customerName);
             $order->setQuantityOrdered($quantityOrdered);
-            $order->setOrderStatus(OrderStatus::Success);
+            $order->setOrderStatus(OrderStatus::Processing);
 
             $this->em->persist($order);
             $this->em->flush();

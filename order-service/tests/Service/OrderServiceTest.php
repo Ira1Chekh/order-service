@@ -100,7 +100,7 @@ class OrderServiceTest extends TestCase
         $this->assertSame(7, $product->getQuantity());
         $this->assertSame('John Doe', $order->getCustomerName());
         $this->assertSame(3, $order->getQuantityOrdered());
-        $this->assertSame(OrderStatus::Success, $order->getOrderStatus());
+        $this->assertSame(OrderStatus::Processing, $order->getOrderStatus());
         $this->assertSame($product, $order->getProduct());
     }
 

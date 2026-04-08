@@ -3,24 +3,29 @@
 namespace App\MessageHandler;
 
 use Acme\SharedBundle\DTO\OrderDTO;
-use Psr\Log\LoggerInterface;
+use App\Enum\OrderStatus;
+use App\Repository\OrderRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 class OrderCompletionHandler
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
+        private readonly OrderRepository $orderRepository,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
     public function __invoke(OrderDTO $dto): void
     {
-        $this->logger->info('Order completed', [
-            'orderId'         => $dto->orderId,
-            'customerName'    => $dto->customerName,
-            'quantityOrdered' => $dto->quantityOrdered,
-            'orderStatus'     => $dto->orderStatus,
-        ]);
+        $order = $this->orderRepository->find($dto->orderId);
+
+        if (!$order) {
+            return;
+        }
+
+        $order->setOrderStatus(OrderStatus::Success);
+        $this->em->flush();
     }
 }
